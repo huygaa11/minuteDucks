@@ -19,6 +19,7 @@ public class Main implements Runnable{
 	public int height = 200;
 	
 	public static void main(String args[]){
+		new Environment();
 		new Main().start();
 	}
 	
