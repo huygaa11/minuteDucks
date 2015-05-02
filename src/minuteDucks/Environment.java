@@ -19,6 +19,9 @@ import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.FPSAnimator;
+import com.sun.opengl.util.texture.Texture;
+import com.sun.opengl.util.texture.TextureData;
+import com.sun.opengl.util.texture.TextureIO;
 
 import java.util.ArrayList;
 
@@ -455,6 +458,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float ydif = 0;
 	Obstacle[] obstacles = new Obstacle[astcnt];
 
+	Texture[] skybox;
 	
 
 	private float depth = -50.f;
@@ -469,7 +473,23 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	
 	public void display(GLAutoDrawable drawable) {
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+		
+        // Change to projection matrix.
+        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glLoadIdentity();
+        
+        // Perspective.
+        float widthHeightRatio = (float) getWidth() / (float) getHeight();
+        glu.gluPerspective(45, widthHeightRatio, 1, 1000);
+//        glu.gluLookAt(0, 0, 100, 0, 0, 0, 0, 1, 0);
+
+        // Change back to model view matrix.
+        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glLoadIdentity();
+		
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		
 		gl.glPolygonMode(GL.GL_FRONT_AND_BACK, wireframe ? GL.GL_LINE : GL.GL_FILL);	
 		gl.glShadeModel(flatshade ? GL.GL_FLAT : GL.GL_SMOOTH);		
@@ -495,7 +515,67 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //		gl.glRotatef(rotv, 1.0f, 0, 0);
 		gl.glTranslatef(-centerx, -centery, -centerz);	
 
+		/* Skybox */
+		gl.glPushMatrix();
 		
+		gl.glEnable(GL.GL_TEXTURE_2D);
+		gl.glColor3f(0f, 1f, 0.2f);
+		//Front
+		skybox[0].enable();
+		skybox[0].bind();
+		gl.glBegin(GL.GL_QUADS);
+		gl.glTexCoord2f(0, 0); 	gl.glVertex3f(-10, -10, -10);
+		gl.glTexCoord2f(1, 0); gl.glVertex3f(+10, -10, -10);
+		gl.glTexCoord2f(1, 1); 	gl.glVertex3f(10, 10, -10);
+		gl.glTexCoord2f(0, 1);	gl.glVertex3f(-10, 10, -10);
+        gl.glEnd();
+        skybox[0].disable();
+        
+        //Left
+        skybox[1].enable();
+		skybox[1].bind();
+        gl.glBegin(GL.GL_QUADS);
+        gl.glVertex3f(-30, -10, -10);
+        gl.glVertex3f(-30, +10, -10);
+        gl.glVertex3f(-30, +10, +10);
+        gl.glVertex3f(-30, -10, +10);
+        gl.glEnd();
+        skybox[1].disable();
+        
+        //Behind
+		gl.glBegin(GL.GL_QUADS);
+        gl.glVertex3f(-10, 10, +30);
+        gl.glVertex3f(10, 10, +30);
+        gl.glVertex3f(+10, -10, +30);
+		gl.glVertex3f(-10, -10, +30);
+        gl.glEnd();
+        
+        // Right
+        gl.glBegin(GL.GL_QUADS);
+        gl.glVertex3f(+30, -10, +10);
+        gl.glVertex3f(+30, +10, +10);
+        gl.glVertex3f(+30, +10, -10);
+        gl.glVertex3f(+30, -10, -10);
+        gl.glEnd();
+
+        // Up
+        gl.glBegin(GL.GL_QUADS);
+        gl.glVertex3f(-10, +30, -10);
+        gl.glVertex3f(+10, +30, -10);
+        gl.glVertex3f(+10, +30, +10);
+        gl.glVertex3f(-10, +30, +10);
+        gl.glEnd();
+        
+        // Down
+        gl.glBegin(GL.GL_QUADS);
+        gl.glVertex3f(-10, -30, +10);
+        gl.glVertex3f(+10, -30, +10);
+        gl.glVertex3f(+10, -30, -10);
+        gl.glVertex3f(-10, -30, -10);
+        gl.glEnd();
+        
+        
+        gl.glPopMatrix();
 		/* === YOUR WORK HERE === */
 		
 		// Statue 
@@ -713,6 +793,29 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		gl.glCullFace(GL.GL_BACK);
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glShadeModel(GL.GL_SMOOTH);		
+		
+		//Load Textures
+		try {
+			skybox = new Texture[6];
+			TextureData sb0 = TextureIO.newTextureData(new File("stars_fr.jpg"), false, "front");
+			System.out.println(sb0);
+	        skybox[0] = TextureIO.newTexture(sb0);
+	        TextureData sb1 = TextureIO.newTextureData(new File("stars_lf.jpg"), false, "left");
+	        skybox[1] = TextureIO.newTexture(sb1);
+	        TextureData sb2 = TextureIO.newTextureData(new File("stars_bk.jpg"), false, "back");
+	        skybox[2] = TextureIO.newTexture(sb2);
+	        TextureData sb3 = TextureIO.newTextureData(new File("stars_rt.jpg"), false, "right");
+	        skybox[3] = TextureIO.newTexture(sb3);
+	        TextureData sb4 = TextureIO.newTextureData(new File("stars_up.jpg"), false, "up");
+	        skybox[4] = TextureIO.newTexture(sb4);
+	        TextureData sb5 = TextureIO.newTextureData(new File("stars_dn.jpg"), false, "down");
+	        skybox[5] = TextureIO.newTexture(sb5);
+
+        }
+        catch (IOException exc) {
+            exc.printStackTrace();
+            System.exit(1);
+        }
 	}
 	
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
