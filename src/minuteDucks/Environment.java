@@ -249,6 +249,15 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		canvas.display();
 	}
 	
+	
+	// detects if the player is collided with an object
+	public boolean collideWithPlayer(objModel obj){
+		
+		
+		
+		return false;
+	}
+	
 	public void keyReleased(KeyEvent e) { 
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
@@ -477,6 +486,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			glu.gluPerspective(45.f, (float)width/(float)height, znear, zfar);
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 	}
+	
+	
 	
 	public void mousePressed(MouseEvent e) {	
 		mouseX = e.getX();
