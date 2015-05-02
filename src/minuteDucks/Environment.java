@@ -1,4 +1,3 @@
-package minuteDucks;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -202,26 +201,42 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		}		
 	}
 
-
+	class Obstacle{
+		objModel obj;
+		public float x, y, z, speed;
+		public Obstacle(objModel obj, float x, float y, float z) {
+			this.obj = obj;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+		public Obstacle() {
+			obj = null;
+			x = 0;
+			y = 0;
+			z = 0;
+		}
+	}
+	
 	public void keyPressed(KeyEvent e) {
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
-			System.out.println("pressed");
+//			System.out.println("pressed");
 			break;
 		case KeyEvent.VK_RIGHT:
-			System.out.println("right");
+//			System.out.println("right");
 			xdif = 0.1f;
 			break;
 		case KeyEvent.VK_LEFT:
-			System.out.println("left");
+//			System.out.println("left");
 			xdif= -0.1f;
 			break;
 		case KeyEvent.VK_UP:
-			System.out.println("up");
+//			System.out.println("up");
 			ydif = 0.1f;
 			break;
 		case KeyEvent.VK_DOWN:
-			System.out.println("down");
+//			System.out.println("down");
 			ydif = -0.1f;
 			break;
 		case KeyEvent.VK_ESCAPE:
@@ -246,34 +261,34 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		default:
 			break;
 		}
-		canvas.display();
+//		canvas.display();
 	}
 	
 	public void keyReleased(KeyEvent e) { 
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
-			System.out.println("released");
+//			System.out.println("released");
 			break;
 		case KeyEvent.VK_RIGHT:
-			System.out.println("right");
+//			System.out.println("right");
 			xdif = 0.0f;
 			break;
 		case KeyEvent.VK_LEFT:
-			System.out.println("left");
+//			System.out.println("left");
 			xdif= -0.0f;
 			break;
 		case KeyEvent.VK_UP:
-			System.out.println("up");
+//			System.out.println("up");
 			ydif = 0.0f;
 			break;
 		case KeyEvent.VK_DOWN:
-			System.out.println("down");
+//			System.out.println("down");
 			ydif = -0.0f;
 			break;
 		default:
 			break;
 		}
-		canvas.display();
+//		canvas.display();
 	}
 	
 	/* GL, display, model transformation, and mouse control variables */
@@ -303,9 +318,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float playery = 0;
 	private float xdif = 0;
 	private float ydif = 0;
+	Obstacle[] obstacles = new Obstacle[10];
+
 	
-	
-	private objModel statue_model = new objModel("statue.obj");
 
 	private float depth = -50.f;
 	
@@ -346,16 +361,12 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		/* === YOUR WORK HERE === */
 		
 		// Statue 
-		gl.glPushMatrix();	
-		gl.glTranslatef(0, -0.3f, depth);
-		//Color the statue
-	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_DIFFUSE, mat_diffuse, 3);
-	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_SPECULAR, mat_specular, 0);
-	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_AMBIENT, mat_ambient, 0);
-	    gl.glScalef(0.5f, 0.5f, 0.5f);
-	    
-		statue_model.Draw();
-		gl.glPopMatrix();
+		for(int i = 0; i < obstacles.length; i++){
+			gl.glPushMatrix();
+			gl.glTranslatef(obstacles[i].x, obstacles[i].y, obstacles[i].z);
+			obstacles[i].obj.Draw();
+			gl.glPopMatrix();
+		}
 		
 	
 		
@@ -364,8 +375,15 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		player.Draw();
 		
 		if (animator.isAnimating()){
-			depth += 0.5f;
-			if(depth >= 1.7) depth = -10f;
+			for(Obstacle obst : obstacles){
+				obst.z += obst.speed;
+				if( obst.z >= 8 ){
+					obst.x = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+					obst.y = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+					obst.z = -40f;
+					obst.speed = (float)(Math.random()+1)/2;
+				}
+			}
 			
 			playerx += xdif;
 			if(playerx < -3f || playerx > 3f)
@@ -379,6 +397,14 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	public Environment() {
 		super("Assignment 3 -- Hierarchical Modeling");
+		for(int i = 0; i < 10; i++){
+			obstacles[i] = new Obstacle();
+			obstacles[i].obj = new objModel("statue.obj");
+			obstacles[i].x = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+			obstacles[i].z = -50f;
+			obstacles[i].speed = (float)(Math.random()+1)/2;
+		}
 		canvas = new GLCanvas();
 		canvas.addGLEventListener(this);
 		canvas.addKeyListener(this);
