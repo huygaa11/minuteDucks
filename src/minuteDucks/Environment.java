@@ -29,6 +29,20 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	 * estimating per vertex average normal,
 	 * and displaying the mesh.
 	 */
+	
+//	class Player extends objModel{
+//
+//		public Player(String filename) {
+//			super(filename);
+//			
+//		}
+//		
+//		private moveUp(){
+//			
+//		}
+//	}
+	
+	
 	class objModel {
 		public FloatBuffer vertexBuffer;
 		public IntBuffer faceBuffer;
@@ -191,26 +205,29 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 	public void keyPressed(KeyEvent e) {
 		switch(e.getKeyCode()) {
+		case KeyEvent.VK_SPACE:
+			System.out.println("pressed");
+			break;
+		case KeyEvent.VK_RIGHT:
+			System.out.println("right");
+			xdif = 0.1f;
+			break;
+		case KeyEvent.VK_LEFT:
+			System.out.println("left");
+			xdif= -0.1f;
+			break;
+		case KeyEvent.VK_UP:
+			System.out.println("up");
+			ydif = 0.1f;
+			break;
+		case KeyEvent.VK_DOWN:
+			System.out.println("down");
+			ydif = -0.1f;
+			break;
 		case KeyEvent.VK_ESCAPE:
 		case KeyEvent.VK_Q:
 			System.exit(0);
 			break;		
-		case 'r':
-		case 'R':
-			initViewParameters();
-			break;
-		case 'w':
-		case 'W':
-			wireframe = ! wireframe;
-			break;
-		case 'b':
-		case 'B':
-			cullface = !cullface;
-			break;
-		case 'f':
-		case 'F':
-			flatshade = !flatshade;
-			break;
 		case 'a':
 		case 'A':
 			if (animator.isAnimating())
@@ -232,13 +249,40 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		canvas.display();
 	}
 	
+	public void keyReleased(KeyEvent e) { 
+		switch(e.getKeyCode()) {
+		case KeyEvent.VK_SPACE:
+			System.out.println("released");
+			break;
+		case KeyEvent.VK_RIGHT:
+			System.out.println("right");
+			xdif = 0.0f;
+			break;
+		case KeyEvent.VK_LEFT:
+			System.out.println("left");
+			xdif= -0.0f;
+			break;
+		case KeyEvent.VK_UP:
+			System.out.println("up");
+			ydif = 0.0f;
+			break;
+		case KeyEvent.VK_DOWN:
+			System.out.println("down");
+			ydif = -0.0f;
+			break;
+		default:
+			break;
+		}
+		canvas.display();
+	}
+	
 	/* GL, display, model transformation, and mouse control variables */
 	private final GLCanvas canvas;
 	private GL gl;
 	private final GLU glu = new GLU();	
 	private FPSAnimator animator;
 
-	private int winW = 800, winH = 800;
+	private int winW = 1200, winH = 800;
 	private boolean wireframe = false;
 	private boolean cullface = true;
 	private boolean flatshade = false;
@@ -254,6 +298,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	/* === YOUR WORK HERE === */
 	/* Define more models you need for constructing your scene */
+	private objModel player = new objModel("statue.obj");
+	private float playerx = 0;
+	private float playery = 0;
+	private float xdif = 0;
+	private float ydif = 0;
+	
+	
 	private objModel statue_model = new objModel("statue.obj");
 
 	private float depth = -50.f;
@@ -301,12 +352,28 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_DIFFUSE, mat_diffuse, 3);
 	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_SPECULAR, mat_specular, 0);
 	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_AMBIENT, mat_ambient, 0);
+	    gl.glScalef(0.5f, 0.5f, 0.5f);
+	    
 		statue_model.Draw();
 		gl.glPopMatrix();
 		
+	
+		
+		gl.glTranslatef(playerx, 0, 0);
+		gl.glTranslatef(0, playery, 0);
+		player.Draw();
+		
 		if (animator.isAnimating()){
 			depth += 0.5f;
-			if(depth >= 1.7) depth = -50f;
+			if(depth >= 1.7) depth = -10f;
+			
+			playerx += xdif;
+			if(playerx < -3f || playerx > 3f)
+				playerx -= xdif;
+			
+			playery += ydif;
+			if(playery < -2.2f || playery > 2.2)
+				playery -= ydif;
 		}
 	}	
 	
@@ -476,7 +543,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	// these event functions are not used for this assignment
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) { }
 	public void keyTyped(KeyEvent e) { }
-	public void keyReleased(KeyEvent e) { }
+	
 	public void mouseMoved(MouseEvent e) { }
 	public void actionPerformed(ActionEvent e) { }
 	public void mouseClicked(MouseEvent e) { }
