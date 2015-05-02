@@ -1,3 +1,4 @@
+package minuteDucks;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +42,17 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //		}
 //	}
 	
+	class Player extends Obstacle{
+
+		public Player(objModel obj, float x, float y, float z) {
+			super(obj, x, y, z);
+		}
+		
+		public boolean checkCollision(){
+			
+			return false;
+		}
+	}
 	
 	class objModel {
 		public FloatBuffer vertexBuffer;
@@ -49,7 +61,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		public Point3f center;
 		public int num_verts;		// number of vertices
 		public int num_faces;		// number of triangle faces
-
+		public float radius = .5f;		// radius
+		
 		public void Draw() {
 			vertexBuffer.rewind();
 			normalBuffer.rewind();
@@ -111,9 +124,34 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					break;
 				case 'f':
 					tokens = line.split("[ ]+");
-					v1 = Integer.valueOf(tokens[1])-1;
-					v2 = Integer.valueOf(tokens[2])-1;
-					v3 = Integer.valueOf(tokens[3])-1;
+					String s1 = tokens[1];
+					if(s1.contains("/"))
+						s1 = s1.split("/")[0];
+					
+					if(s1.charAt(0) == '-')
+						s1 = s1.substring(1);
+					
+					v1 = Integer.valueOf(s1)-1;
+					
+					String s2 = tokens[2];
+					if(s2.contains("/"))
+						s2 = s2.split("/")[0];
+					
+					if(s2.charAt(0) == '-')
+						s2 = s2.substring(1);
+					
+					v2 = Integer.valueOf(s2)-1;
+					
+					String s3 = tokens[3];
+					if(s3.contains("/"))
+						s3 = s3.split("/")[0];
+					
+					if(s3.charAt(0) == '-')
+						s3 = s3.substring(1);
+					
+					v3 = Integer.valueOf(s3)-1;
+//					v2 = Integer.valueOf(tokens[2])-1;
+//					v3 = Integer.valueOf(tokens[3])-1;
 					input_faces.add(v1);
 					input_faces.add(v2);
 					input_faces.add(v3);				
@@ -201,50 +239,65 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		}		
 	}
 
+	
 	class Obstacle{
 		objModel obj;
 		public float x, y, z, speed;
+		public float r = 0.5f;
+		public float radius;
+
 		public Obstacle(objModel obj, float x, float y, float z) {
 			this.obj = obj;
 			this.x = x;
 			this.y = y;
 			this.z = z;
+			this.radius = r * ((float)Math.random() + 1) / 2;
 		}
 		public Obstacle() {
 			obj = null;
 			x = 0;
 			y = 0;
 			z = 0;
+			this.radius = r * ((float)Math.random() + 1) / 2;
 		}
 	}
 	
+	public float cameraYSpeed = 0;
+	public float cameraXSpeed = 0;
+	public float dif = 0.2f;
+	public float rot = 1f;
+	
 	public void keyPressed(KeyEvent e) {
+
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
 //			System.out.println("pressed");
 			break;
 		case KeyEvent.VK_RIGHT:
 //			System.out.println("right");
-			xdif = 0.1f;
+			cameraXSpeed = -2*rot;
+			xdif = dif;
 			break;
 		case KeyEvent.VK_LEFT:
 //			System.out.println("left");
-			xdif= -0.1f;
+			cameraXSpeed = +2*rot;
+			xdif= -dif;
 			break;
 		case KeyEvent.VK_UP:
 //			System.out.println("up");
-			ydif = 0.1f;
+			ydif = dif;
+			cameraYSpeed = -rot;
 			break;
 		case KeyEvent.VK_DOWN:
 //			System.out.println("down");
-			ydif = -0.1f;
+			ydif = -dif;
+			cameraYSpeed = rot;
 			break;
 		case KeyEvent.VK_ESCAPE:
-		case KeyEvent.VK_Q:
 			System.exit(0);
 			break;		
-		case 'a':
-		case 'A':
+		case 'p':
+		case 'P':
 			if (animator.isAnimating())
 				animator.stop();
 			else 
@@ -258,20 +311,16 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		case '_':
 			animation_speed /= 1.2;
 			break;
+		case 'w':	
+		case 'W':
+			cameraYSpeed = 1f;
 		default:
 			break;
 		}
 //		canvas.display();
 	}
 	
-	
-	// detects if the player is collided with an object
-	public boolean collideWithPlayer(objModel obj){
-		
-		
-		
-		return false;
-	}
+
 	
 	public void keyReleased(KeyEvent e) { 
 		switch(e.getKeyCode()) {
@@ -281,19 +330,25 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		case KeyEvent.VK_RIGHT:
 //			System.out.println("right");
 			xdif = 0.0f;
+			cameraXSpeed = 0;
 			break;
 		case KeyEvent.VK_LEFT:
 //			System.out.println("left");
+			cameraXSpeed = 0;
 			xdif= -0.0f;
 			break;
 		case KeyEvent.VK_UP:
 //			System.out.println("up");
+			cameraYSpeed = 0;
 			ydif = 0.0f;
 			break;
 		case KeyEvent.VK_DOWN:
 //			System.out.println("down");
+			cameraYSpeed = 0;
 			ydif = -0.0f;
 			break;
+		case KeyEvent.VK_W:	
+			cameraYSpeed = 0;	
 		default:
 			break;
 		}
@@ -322,12 +377,14 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	/* === YOUR WORK HERE === */
 	/* Define more models you need for constructing your scene */
-	private objModel player = new objModel("statue.obj");
+	private Player player = new Player(new objModel("dark_fighter_6.obj"), 0, 0 ,0);
 	private float playerx = 0;
 	private float playery = 0;
+	private float playerz = 5f;
+	
 	private float xdif = 0;
 	private float ydif = 0;
-	Obstacle[] obstacles = new Obstacle[10];
+	Obstacle[] obstacles = new Obstacle[astcnt];
 
 	
 
@@ -360,10 +417,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	    float mat_shininess[] = { 128 };
 
 		/* this is the transformation of the entire scene */
+	    
+	    gl.glTranslatef(-playerx, -playery - .1f, 0);
+	    
 		gl.glTranslatef(-xpos, -ypos, -zpos);
 		gl.glTranslatef(centerx, centery, centerz);
-		gl.glRotatef(360.f - roth, 0, 1.0f, 0);
-		gl.glRotatef(rotv, 1.0f, 0, 0);
+//		gl.glRotatef(360.f - roth, 0, 1.0f, 0);
+//		gl.glRotatef(rotv, 1.0f, 0, 0);
 		gl.glTranslatef(-centerx, -centery, -centerz);	
 
 		
@@ -373,44 +433,124 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		for(int i = 0; i < obstacles.length; i++){
 			gl.glPushMatrix();
 			gl.glTranslatef(obstacles[i].x, obstacles[i].y, obstacles[i].z);
+			
+			gl.glScalef(obstacles[i].radius, obstacles[i].radius, obstacles[i].radius);
 			obstacles[i].obj.Draw();
 			gl.glPopMatrix();
 		}
 		
-	
+//		gl.glTranslatef(-playerx, -playery, 0);
 		
-		gl.glTranslatef(playerx, 0, 0);
-		gl.glTranslatef(0, playery, 0);
-		player.Draw();
+		gl.glPushMatrix();
+		gl.glTranslatef(playerx, playery, playerz);
+
+		
+		gl.glRotatef(360.f - roth, 0, 0, -1f);
+		gl.glRotatef(rotv, -1.0f, 0, 0);
+		
+		gl.glRotatef(-90f, 0, 1f, 0);
+		player.obj.Draw();
+		gl.glPopMatrix();
 		
 		if (animator.isAnimating()){
 			for(Obstacle obst : obstacles){
 				obst.z += obst.speed;
+				
+				obst.x += (Math.random() - .5f) / 10;
+				obst.y += (Math.random() -.5f)/ 10;
+				
 				if( obst.z >= 8 ){
-					obst.x = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
-					obst.y = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+					obst.x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
+					obst.y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 					obst.z = -40f;
 					obst.speed = (float)(Math.random()+1)/2;
+					obst.radius = obst.r * ((float)Math.random() * 2 + 1) / 2;
+					System.out.println(obst.radius);
 				}
 			}
 			
+			if(roth < 50f && roth > -50f)
+				roth += cameraXSpeed;
+			
+			if(cameraXSpeed == 0){
+				if(roth > 0.2f) 
+					roth -= rot;
+				else if (roth < -0.2f)
+					roth += rot;
+			}
+			
 			playerx += xdif;
-			if(playerx < -3f || playerx > 3f)
+			if(checkRangeX()){
 				playerx -= xdif;
+			}
+			
+			
+			
+			if(rotv < 20f && rotv > -20f)
+				rotv += cameraYSpeed;
+			
+			if(cameraYSpeed == 0){
+				if(rotv > 0.5f) 
+					rotv -= 2*rot/3;
+				else if(rotv < -0.5f)
+					rotv += 2*rot/3;
+			}
 			
 			playery += ydif;
-			if(playery < -2.2f || playery > 2.2)
+			if(checkRangeY()){
 				playery -= ydif;
+			}
+			
+			
+			
+			if(checkCollision()){
+				System.out.println("Deadd");
+				//animator.stop();
+
+			}
 		}
 	}	
 	
+	private boolean checkRangeX() {
+		return playerx < -obslim || playerx > obslim;
+	}
+	private boolean checkRangeY() {
+		return playery < -obslim || playery > obslim;
+	}
+
+
+	private boolean checkCollision() {
+		for(Obstacle obst : obstacles){
+			if(isCollided(obst)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isCollided(Obstacle obst) {
+		return dist(obst) < player.radius + obst.radius;
+	}
+
+	private float dist(Obstacle obst) {
+		Vector3f playerPos = new Vector3f(playerx, playery, playerz);
+		Vector3f obstPos = new Vector3f(obst.x, obst.y, obst.z);
+		playerPos.sub(obstPos);
+		
+//		if(playerPos.length() < 5f)
+//			System.out.println(playerPos.length());
+		return playerPos.length();
+	}
+
+	int obslim = 10;
+	static int astcnt = 200;
 	public Environment() {
 		super("Assignment 3 -- Hierarchical Modeling");
-		for(int i = 0; i < 10; i++){
+		for(int i = 0; i < astcnt; i++){
 			obstacles[i] = new Obstacle();
-			obstacles[i].obj = new objModel("statue.obj");
-			obstacles[i].x = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
-			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*10 : (float)Math.random()*-10;
+			obstacles[i].obj = new objModel("crystal_1.obj");
+			obstacles[i].x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
+			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 			obstacles[i].z = -50f;
 			obstacles[i].speed = (float)(Math.random()+1)/2;
 		}
