@@ -58,6 +58,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		public FloatBuffer vertexBuffer;
 		public IntBuffer faceBuffer;
 		public FloatBuffer normalBuffer;
+		public FloatBuffer textureBuffer;
 		public Point3f center;
 		public int num_verts;		// number of vertices
 		public int num_faces;		// number of triangle faces
@@ -67,16 +68,25 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			vertexBuffer.rewind();
 			normalBuffer.rewind();
 			faceBuffer.rewind();
+			textureBuffer.rewind();
+			
 			gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
 			gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+			gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
 			
 			gl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer);
 			gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
+		
+			gl.glClientActiveTexture(GL.GL_TEXTURE0);
+			gl.glTexCoordPointer(3, GL.GL_FLOAT, 0, textureBuffer);
+			gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);  //Bind the IBO
+			
 			
 			gl.glDrawElements(GL.GL_TRIANGLES, num_faces*3, GL.GL_UNSIGNED_INT, faceBuffer);
 			
 			gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
 			gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+			gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
 		}
 		
 		public objModel(String filename) {
@@ -89,9 +99,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				System.exit(0);
 			}
 
-			center = new Point3f();			
+			center = new Point3f();	
+			
 			float x, y, z;
 			int v1, v2, v3;
+			float xt, yt, zt;
+			int vt1, vt2, vt3;
+			
 			float minx, miny, minz;
 			float maxx, maxy, maxz;
 			float bbx, bby, bbz;
@@ -101,6 +115,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			String line;
 			String[] tokens;
 			ArrayList<Point3f> input_verts = new ArrayList<Point3f> ();
+			ArrayList<Point3f> input_text_verts = new ArrayList<Point3f> ();
+			
+			ArrayList<Integer> input_textures = new ArrayList<Integer> ();
 			ArrayList<Integer> input_faces = new ArrayList<Integer> ();
 			ArrayList<Vector3f> input_norms = new ArrayList<Vector3f> ();
 			try {
@@ -122,20 +139,36 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					input_verts.add(new Point3f(x, y, z));
 					center.add(new Point3f(x, y, z));
 					break;
+						
 				case 'f':
+					vt1 = vt2 = vt3 = 0;
 					tokens = line.split("[ ]+");
 					String s1 = tokens[1];
-					if(s1.contains("/"))
-						s1 = s1.split("/")[0];
+					
+					boolean hasText = false;
+					
+					if(s1.contains("/")){
+						String[] array = s1.split("/");
+						s1 = array[0];
+						if(array.length > 1){
+							vt1 = Integer.valueOf(array[1]);
+							hasText = true;
+						}
+					}
 					
 					if(s1.charAt(0) == '-')
 						s1 = s1.substring(1);
 					
 					v1 = Integer.valueOf(s1)-1;
-					
+
+					//
 					String s2 = tokens[2];
-					if(s2.contains("/"))
-						s2 = s2.split("/")[0];
+					if(s2.contains("/")){
+						String[] array = s2.split("/");
+						s2 = array[0];
+						if(array.length > 1)
+							vt2 = Integer.valueOf(array[1]);
+					}
 					
 					if(s2.charAt(0) == '-')
 						s2 = s2.substring(1);
@@ -143,8 +176,12 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					v2 = Integer.valueOf(s2)-1;
 					
 					String s3 = tokens[3];
-					if(s3.contains("/"))
-						s3 = s3.split("/")[0];
+					if(s3.contains("/")){
+						String[] array = s3.split("/");
+						s3 = array[0];
+						if(array.length > 1)
+							vt3 = Integer.valueOf(array[1]);
+					}
 					
 					if(s3.charAt(0) == '-')
 						s3 = s3.substring(1);
@@ -154,11 +191,35 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //					v3 = Integer.valueOf(tokens[3])-1;
 					input_faces.add(v1);
 					input_faces.add(v2);
-					input_faces.add(v3);				
+					input_faces.add(v3);
+					
+					if(hasText){
+						input_textures.add(vt1);
+						input_textures.add(vt2);
+						input_textures.add(vt3);
+					}
 					break;
 				default:
+					if(line.length() >= 2){
+						switch(line.charAt(1)){
+						case 't':
+							tokens = line.split("[ ]+");
+							xt = Float.valueOf(tokens[1]);
+							yt = Float.valueOf(tokens[2]);
+							zt = Float.valueOf(tokens[3]);
+							input_text_verts.add(new Point3f(xt, yt, zt));
+							break;
+						case 'n':
+							
+							break;
+						default: 
+							continue;
+						}
+					}
 					continue;
 				}
+				
+				
 			}
 			in.close();	
 			} catch(IOException e) {
@@ -220,6 +281,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			
 			vertexBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
 			normalBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
+			textureBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
 			faceBuffer = BufferUtil.newIntBuffer(input_faces.size());
 			
 			for (i = 0; i < input_verts.size(); i ++) {
@@ -228,7 +290,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				vertexBuffer.put(input_verts.get(i).z);
 				normalBuffer.put(input_norms.get(i).x);
 				normalBuffer.put(input_norms.get(i).y);
-				normalBuffer.put(input_norms.get(i).z);			
+				normalBuffer.put(input_norms.get(i).z);	
+				
+				if(input_text_verts.size() > 0){
+					textureBuffer.put(input_text_verts.get(i).x);	
+					textureBuffer.put(input_text_verts.get(i).y);	
+					textureBuffer.put(input_text_verts.get(i).z);	
+				}
 			}
 			
 			for (i = 0; i < input_faces.size(); i ++) {
@@ -242,9 +310,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	class Obstacle{
 		objModel obj;
-		public float x, y, z, speed;
+		public float x, y, z, speed, speedx, speedy;
 		public float r = 0.5f;
 		public float radius;
+		
 
 		public Obstacle(objModel obj, float x, float y, float z) {
 			this.obj = obj;
@@ -456,14 +525,16 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			for(Obstacle obst : obstacles){
 				obst.z += obst.speed;
 				
-				obst.x += (Math.random() - .5f) / 10;
-				obst.y += (Math.random() -.5f)/ 10;
+				obst.x += obst.speedx + ((float)Math.random() - .5f) / 10;
+				obst.y += obst.speedy + ((float)Math.random() -.5f)/ 10;
 				
 				if( obst.z >= 8 ){
 					obst.x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 					obst.y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 					obst.z = -40f;
 					obst.speed = (float)(Math.random()+1)/2;
+					obst.speedx = (float)(Math.random()-1)/15;
+					obst.speedy = (float)(Math.random()-1)/15;
 					obst.radius = obst.r * ((float)Math.random() * 2 + 1) / 2;
 					System.out.println(obst.radius);
 				}
@@ -512,10 +583,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	}	
 	
 	private boolean checkRangeX() {
-		return playerx < -obslim || playerx > obslim;
+		return playerx < -obslim *2/3 || playerx > obslim*2/3;
 	}
 	private boolean checkRangeY() {
-		return playery < -obslim || playery > obslim;
+		return playery < -obslim *2/3 || playery > obslim*2/3;
 	}
 
 
@@ -542,10 +613,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		return playerPos.length();
 	}
 
-	int obslim = 10;
-	static int astcnt = 200;
+	int obslim = 15;
+	static int astcnt = 500;
 	public Environment() {
-		super("Assignment 3 -- Hierarchical Modeling");
+		super("project");
 		for(int i = 0; i < astcnt; i++){
 			obstacles[i] = new Obstacle();
 			obstacles[i].obj = new objModel("crystal_1.obj");
@@ -553,6 +624,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 			obstacles[i].z = -50f;
 			obstacles[i].speed = (float)(Math.random()+1)/2;
+			obstacles[i].speedx = (float)(Math.random()-1)/15;
+			obstacles[i].speedy = (float)(Math.random()-1)/15;
 		}
 		canvas = new GLCanvas();
 		canvas.addGLEventListener(this);
