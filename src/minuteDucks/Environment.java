@@ -360,7 +360,11 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			break;
 		case KeyEvent.VK_ESCAPE:
 			System.exit(0);
-			break;		
+			break;
+		case 'f':
+		case 'F':
+			funMode = !funMode;
+			break;
 		case 'p':
 		case 'P':
 			if (animator.isAnimating())
@@ -439,6 +443,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float motionSpeed, rotateSpeed;
 	private float animation_speed = 1.0f;
 	
+	private boolean funMode = false;
 	public static float R = 8;
 	
 	/* === YOUR WORK HERE === */
@@ -686,8 +691,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			
 			if(checkCollision()){
 				System.out.println("Deadd");
-				animator.stop();
-
+				
+				if(!funMode)
+					animator.stop();
+				
 			}
 		}
 	}	
@@ -731,7 +738,16 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		super("project");
 		for(int i = 0; i < astcnt; i++){
 			obstacles[i] = new Obstacle();
-			obstacles[i].obj = new objModel("asteroid_model.obj");
+			
+			double x = Math.random();
+			obstacles[i].obj = null;
+			if(x < 0.05){
+				obstacles[i].obj = new objModel("crystal_1.obj");
+			}
+			
+			else{
+				obstacles[i].obj = new objModel("asteroid_model.obj");
+			}
 			obstacles[i].x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 			obstacles[i].z = far;
