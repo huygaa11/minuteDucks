@@ -2,7 +2,6 @@ package minuteDucks;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -31,12 +30,6 @@ import java.util.ArrayList;
 
 class Environment extends JFrame implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, ActionListener {
 
-	/* This defines the objModel class, which takes care
-	 * of loading a triangular mesh from an obj file,
-	 * estimating per vertex average normal,
-	 * and displaying the mesh.
-	 */
-	
 	
 	class Player extends Obstacle{
 
@@ -51,7 +44,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		public FloatBuffer vertexBuffer;
 		public IntBuffer faceBuffer;
 		public FloatBuffer normalBuffer;
-		public FloatBuffer textureBuffer;
+//		public FloatBuffer textureBuffer;
 		public Point3f center;
 		public int num_verts;		// number of vertices
 		public int num_faces;		// number of triangle faces
@@ -61,25 +54,25 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			vertexBuffer.rewind();
 			normalBuffer.rewind();
 			faceBuffer.rewind();
-			textureBuffer.rewind();
+//			textureBuffer.rewind();
 			
 			gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
 			gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
-			gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+//			gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
 			
 			gl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer);
 			gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
 		
-			gl.glClientActiveTexture(GL.GL_TEXTURE0);
-			gl.glTexCoordPointer(3, GL.GL_FLOAT, 0, textureBuffer);
-			gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);  //Bind the IBO
+//			gl.glClientActiveTexture(GL.GL_TEXTURE0);
+//			gl.glTexCoordPointer(3, GL.GL_FLOAT, 0, textureBuffer);
+//			gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);  //Bind the IBO
 			
 			
 			gl.glDrawElements(GL.GL_TRIANGLES, num_faces*3, GL.GL_UNSIGNED_INT, faceBuffer);
 			
 			gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
 			gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
-			gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+//			gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
 		}
 		
 		public objModel(String filename) {
@@ -138,15 +131,14 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					tokens = line.split("[ ]+");
 					String s1 = tokens[1];
 					
-					boolean hasText = false;
 					
 					if(s1.contains("/")){
 						String[] array = s1.split("/");
 						s1 = array[0];
-						if(array.length > 1){
-							vt1 = Integer.valueOf(array[1]);
-							hasText = true;
-						}
+//						if(array.length > 1){
+//							vt1 = Integer.valueOf(array[1]);
+//							hasText = true;
+//						}
 					}
 					
 					if(s1.charAt(0) == '-')
@@ -159,8 +151,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					if(s2.contains("/")){
 						String[] array = s2.split("/");
 						s2 = array[0];
-						if(array.length > 1)
-							vt2 = Integer.valueOf(array[1]);
+//						if(array.length > 1)
+//							vt2 = Integer.valueOf(array[1]);
 					}
 					
 					if(s2.charAt(0) == '-')
@@ -172,8 +164,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					if(s3.contains("/")){
 						String[] array = s3.split("/");
 						s3 = array[0];
-						if(array.length > 1)
-							vt3 = Integer.valueOf(array[1]);
+//						if(array.length > 1)
+//							vt3 = Integer.valueOf(array[1]);
 					}
 					
 					if(s3.charAt(0) == '-')
@@ -186,29 +178,29 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 					input_faces.add(v2);
 					input_faces.add(v3);
 					
-					if(hasText){
-						input_textures.add(vt1);
-						input_textures.add(vt2);
-						input_textures.add(vt3);
-					}
+//					if(hasText){
+//						input_textures.add(vt1);
+//						input_textures.add(vt2);
+//						input_textures.add(vt3);
+//					}
 					break;
 				default:
-					if(line.length() >= 2){
-						switch(line.charAt(1)){
-						case 't':
-							tokens = line.split("[ ]+");
-							xt = Float.valueOf(tokens[1]);
-							yt = Float.valueOf(tokens[2]);
-							zt = Float.valueOf(tokens[3]);
-							input_text_verts.add(new Point3f(xt, yt, zt));
-							break;
-						case 'n':
-							
-							break;
-						default: 
-							continue;
-						}
-					}
+//					if(line.length() >= 2){
+//						switch(line.charAt(1)){
+//						case 't':
+//							tokens = line.split("[ ]+");
+//							xt = Float.valueOf(tokens[1]);
+//							yt = Float.valueOf(tokens[2]);
+//							zt = Float.valueOf(tokens[3]);
+//							input_text_verts.add(new Point3f(xt, yt, zt));
+//							break;
+//						case 'n':
+//							
+//							break;
+//						default: 
+//							continue;
+//						}
+//					}
 					continue;
 				}
 				
@@ -218,9 +210,6 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			} catch(IOException e) {
 				System.out.println("Unhandled error while reading input file.");
 			}
-
-			System.out.println("Read " + input_verts.size() +
-						   	" vertices and " + input_faces.size() + " faces.");
 			
 			center.scale(1.f / (float) input_verts.size());
 			
@@ -237,7 +226,6 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			}
 			center.x = center.y = center.z = 0.f;
 			
-			/* estimate per vertex average normal */
 			int i;
 			for (i = 0; i < input_verts.size(); i ++) {
 				input_norms.add(new Vector3f());
@@ -267,14 +255,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				input_norms.get(v3).add(tn);			
 			}
 
-			/* convert to buffers to improve display speed */
 			for (i = 0; i < input_verts.size(); i ++) {
 				input_norms.get(i).normalize();
 			}
 			
 			vertexBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
 			normalBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
-			textureBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
+//			textureBuffer = BufferUtil.newFloatBuffer(input_verts.size()*3);
 			faceBuffer = BufferUtil.newIntBuffer(input_faces.size());
 			
 			for (i = 0; i < input_verts.size(); i ++) {
@@ -285,11 +272,11 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				normalBuffer.put(input_norms.get(i).y);
 				normalBuffer.put(input_norms.get(i).z);	
 				
-				if(input_text_verts.size() > 0){
-					textureBuffer.put(input_text_verts.get(i).x);	
-					textureBuffer.put(input_text_verts.get(i).y);	
-					textureBuffer.put(input_text_verts.get(i).z);	
-				}
+//				if(input_text_verts.size() > 0){
+//					textureBuffer.put(input_text_verts.get(i).x);	
+//					textureBuffer.put(input_text_verts.get(i).y);	
+//					textureBuffer.put(input_text_verts.get(i).z);	
+//				}
 			}
 			
 			for (i = 0; i < input_faces.size(); i ++) {
@@ -378,21 +365,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			else 
 				animator.start();
 			break;
-		case '+':
-		case '=':
-			animation_speed *= 1.2f;
-			break;
-		case '-':
-		case '_':
-			animation_speed /= 1.2;
-			break;
-		case 'w':	
-		case 'W':
-			cameraYSpeed = 1f;
 		default:
 			break;
 		}
-//		canvas.display();
 	}
 	
 
@@ -423,15 +398,11 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			cameraYSpeed = 0;
 			ydif = -0.0f;
 			break;
-		case KeyEvent.VK_W:	
-			cameraYSpeed = 0;	
 		default:
 			break;
 		}
-//		canvas.display();
 	}
 	
-	/* GL, display, model transformation, and mouse control variables */
 	private final GLCanvas canvas;
 	private GL gl;
 	private final GLU glu = new GLU();	
@@ -446,15 +417,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float centerx, centery, centerz;
 	private float roth = 0, rotv = 0;
 	private float znear, zfar;
-	private int mouseX, mouseY, mouseButton;
-	private float motionSpeed, rotateSpeed;
-	private float animation_speed = 1.0f;
 	
 	private boolean funMode = false;
 	public static float R = 8;
 	
-	/* === YOUR WORK HERE === */
-	/* Define more models you need for constructing your scene */
 	private Player player = new Player(new objModel("dark_fighter_6.obj"), 0, 0 ,0);
 	private float playerx = 0;
 	private float playery = 0;
@@ -470,13 +436,6 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	Texture[] skybox;
 	long score = 0;
 
-	private float depth = -50.f;
-	
-	/* Here you should give a conservative estimate of the scene's bounding box
-	 * so that the initViewParameters function can calculate proper
-	 * transformation parameters to display the initial scene.
-	 * If these are not set correctly, the objects may disappear on start.
-	 */
 	private float xmin = -2.5f, ymin = -1.7f, zmin = -1.7f;
 	private float xmax = 2.5f, ymax = 1.7f, zmax = 1.7f;	
 	
@@ -506,16 +465,12 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		
 		
 		
-        // Change to projection matrix.
         gl.glMatrixMode(GL.GL_PROJECTION);
         gl.glLoadIdentity();
         
-        // Perspective.
         float widthHeightRatio = (float) getWidth() / (float) getHeight();
         glu.gluPerspective(45, widthHeightRatio, 1, 1000);
-//        glu.gluLookAt(0, 0, 100, 0, 0, 0, 0, 1, 0);
 
-        // Change back to model view matrix.
         gl.glMatrixMode(GL.GL_MODELVIEW);
         gl.glLoadIdentity();
 		
@@ -533,19 +488,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		
 		gl.glLoadIdentity();
 		
-	    float mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-	    float mat_specular[] = { .8f, .8f, .8f, 1 };
-	    float mat_diffuse[] = { .2f, .6f, .8f, 1 };
-	    float mat_shininess[] = { 128 };
-
-		/* this is the transformation of the entire scene */
-	    
 	    gl.glTranslatef(-playerx, -playery - .1f, 0);
 	    
 		gl.glTranslatef(-xpos, -ypos, -zpos);
 		gl.glTranslatef(centerx, centery, centerz);
-//		gl.glRotatef(360.f - roth, 0, 1.0f, 0);
-//		gl.glRotatef(rotv, 1.0f, 0, 0);
 		gl.glTranslatef(-centerx, -centery, -centerz);	
 
 		/* Skybox */
@@ -610,7 +556,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //        gl.glEnd();
         
         gl.glPopMatrix();
-		/* === YOUR WORK HERE === */
+
         if(state == MENU){
 			drawTitle();
 			return;
@@ -635,10 +581,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				gl.glEnable( GL.GL_LIGHT2 );
 			}
 			else if( rand < 0.66){
-//				gl.glDisable( GL.GL_LIGHT1 );
 				gl.glDisable( GL.GL_LIGHT3 );
 				obstacles[i].obj.Draw();
-//				gl.glEnable( GL.GL_LIGHT1 );
 				gl.glEnable( GL.GL_LIGHT3 );
 			}
 			else{
@@ -737,13 +681,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			
 			
 			if(checkCollision()){
-				System.out.println("Deadd");
-				animator.stop();
-				new Gameover(Long.toString(score), this);
-				/*if(!funMode){
+				if(!funMode){
 					animator.stop();
-				}*/
-				
+					new Gameover(Long.toString(score), this);
+				}
 			}
 		}
 		
@@ -830,7 +771,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		this.removeAll();
 		this.dispose();
 		new Environment();
-		revalidate();
+//		revalidate();
 	}
 	
 	public static void main(String[] args) {
@@ -885,9 +826,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	    gl.glLightfv( GL.GL_LIGHT4, GL.GL_DIFFUSE, light4_diffuse, 0);
 	    gl.glLightfv( GL.GL_LIGHT4, GL.GL_SPECULAR, light4_specular, 0);
 
-	    //material
 	    float mat_ambient[] = { 0, 0, 0, 1 };
-	    float mat_specular[] = { .8f, .8f, .8f, 1 };
+	    float mat_specular[] = { 1, 1, 1, 1 };
 	    float mat_diffuse[] = { .4f, .4f, .4f, 1 };
 	    float mat_shininess[] = { 128 };
 	    gl.glMaterialfv( GL.GL_FRONT, GL.GL_AMBIENT, mat_ambient, 0);
@@ -922,11 +862,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glShadeModel(GL.GL_SMOOTH);		
 		
-		//Load Textures
 		try {
 			skybox = new Texture[6];
 			TextureData sb0 = TextureIO.newTextureData(new File("stars_fr.jpg"), false, "front");
-			System.out.println(sb0);
 	        skybox[0] = TextureIO.newTexture(sb0);
 	        TextureData sb1 = TextureIO.newTextureData(new File("stars_lf.jpg"), false, "left");
 	        skybox[1] = TextureIO.newTexture(sb1);
@@ -960,44 +898,15 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	
 	
 	public void mousePressed(MouseEvent e) {	
-		mouseX = e.getX();
-		mouseY = e.getY();
-		mouseButton = e.getButton();
-		canvas.display();
 	}
 	
 	public void mouseReleased(MouseEvent e) {
-		mouseButton = MouseEvent.NOBUTTON;
-		canvas.display();
 	}	
 	
 	public void mouseDragged(MouseEvent e) {
-		int x = e.getX();
-		int y = e.getY();
-		if (mouseButton == MouseEvent.BUTTON3) {
-			zpos -= (y - mouseY) * motionSpeed;
-			mouseX = x;
-			mouseY = y;
-			canvas.display();
-		} else if (mouseButton == MouseEvent.BUTTON2) {
-			xpos -= (x - mouseX) * motionSpeed;
-			ypos += (y - mouseY) * motionSpeed;
-			mouseX = x;
-			mouseY = y;
-			canvas.display();
-		} else if (mouseButton == MouseEvent.BUTTON1) {
-			roth -= (x - mouseX) * rotateSpeed;
-			rotv += (y - mouseY) * rotateSpeed;
-			mouseX = x;
-			mouseY = y;
-			canvas.display();
-		}
 	}
 
 	
-	/* computes optimal transformation parameters for OpenGL rendering.
-	 * this is based on an estimate of the scene's bounding box
-	 */	
 	void initViewParameters()
 	{
 		roth = rotv = 0;
@@ -1015,13 +924,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 		znear = 0.01f;
 		zfar  = 1000.f;
-
-		motionSpeed = 0.002f * ball_r;
-		rotateSpeed = 0.1f;
-
 	}	
 	
-	// these event functions are not used for this assignment
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) { }
 	public void keyTyped(KeyEvent e) { }
 	
