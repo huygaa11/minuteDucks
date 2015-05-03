@@ -1,5 +1,8 @@
 package minuteDucks;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -19,6 +22,7 @@ import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.FPSAnimator;
+import com.sun.opengl.util.j2d.TextRenderer;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureData;
 import com.sun.opengl.util.texture.TextureIO;
@@ -336,6 +340,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
+			if(state == MENU)
+				state = GAME;
 //			System.out.println("pressed");
 			break;
 		case KeyEvent.VK_RIGHT:
@@ -395,6 +401,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
 //			System.out.println("released");
+			
 			break;
 		case KeyEvent.VK_RIGHT:
 //			System.out.println("right");
@@ -457,8 +464,11 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float ydif = 0;
 	Obstacle[] obstacles = new Obstacle[astcnt];
 
+	final int MENU = 0;
+	final int GAME = 1;
+	int state = MENU;
 	Texture[] skybox;
-	
+	long score = 0;
 
 	private float depth = -50.f;
 	
@@ -470,10 +480,31 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float xmin = -2.5f, ymin = -1.7f, zmin = -1.7f;
 	private float xmax = 2.5f, ymax = 1.7f, zmax = 1.7f;	
 	
+	private void drawTitle(){
+		TextRenderer trend = new TextRenderer(new Font("SansSerif", Font.BOLD, 40));
+		trend.begin3DRendering();
+		trend.setColor(Color.BLUE);
+		trend.draw3D("Asteroid Game", -55, 15, -190, 0.4f);
+		trend.setColor(Color.WHITE);
+		trend.draw3D("Press SPACE to begin your adventure!", -90, 0, -190, 0.25f);
+		
+		trend.end3DRendering();
+	}
+	
+	private TextRenderer drawScore(GLAutoDrawable drawable){
+		TextRenderer trend = new TextRenderer(new Font("SansSerif", Font.BOLD, 28));
+		trend.beginRendering(drawable.getWidth(), drawable.getHeight());
+		trend.setColor(Color.WHITE);
+		trend.draw("Current Score: " + score, 0, drawable.getHeight()-28);
+		trend.endRendering();
+		return trend;
+	}
 	
 	public void display(GLAutoDrawable drawable) {
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+		
+		
 		
         // Change to projection matrix.
         gl.glMatrixMode(GL.GL_PROJECTION);
@@ -489,6 +520,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
         gl.glLoadIdentity();
 		
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        
+        
+
 		
 		gl.glPolygonMode(GL.GL_FRONT_AND_BACK, wireframe ? GL.GL_LINE : GL.GL_FILL);	
 		gl.glShadeModel(flatshade ? GL.GL_FLAT : GL.GL_SMOOTH);		
@@ -516,12 +550,11 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 		/* Skybox */
 		gl.glPushMatrix();
-		
 		int d = 200;
         int w = 150;
-        
 		gl.glEnable(GL.GL_TEXTURE_2D);
 		gl.glColor3f(0f, 1f, 0.2f);
+		
 		//Front
 		skybox[0].enable();
 		skybox[0].bind();
@@ -532,9 +565,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		gl.glTexCoord2f(0, 1);	gl.glVertex3f(-w, w, -d);
         gl.glEnd();
         skybox[0].disable();
-        
-        
-//        
+                
 //        //Left
 //        skybox[1].enable();
 //		skybox[1].bind();
@@ -578,11 +609,16 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //        gl.glVertex3f(-10, -30, -10);
 //        gl.glEnd();
         
-        
         gl.glPopMatrix();
 		/* === YOUR WORK HERE === */
-		
-		// Statue 
+        if(state == MENU){
+			drawTitle();
+			return;
+        }
+        
+		score++;
+		TextRenderer scoreRend = drawScore(drawable);
+		// =========== Draw Asteroids ===========  
 		for(int i = 0; i < obstacles.length; i++){
 			gl.glPushMatrix();
 			gl.glTranslatef(obstacles[i].x, obstacles[i].y, obstacles[i].z);
@@ -618,6 +654,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		
 //		gl.glTranslatef(-playerx, -playery, 0);
 		
+		// =========== DRAW PLAYER =========== 
 		gl.glPushMatrix();
 		gl.glTranslatef(playerx, playery, playerz);
 
@@ -626,13 +663,23 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		gl.glRotatef(rotv, -1.0f, 0, 0);
 		
 		gl.glRotatef(-90f, 0, 1f, 0);
+
+		gl.glDisable(GL.GL_LIGHT1);
+		gl.glDisable(GL.GL_LIGHT2);
+		gl.glDisable(GL.GL_LIGHT3);
+		gl.glEnable(GL.GL_LIGHT4);
 		player.obj.Draw();
+		
+		gl.glEnable(GL.GL_LIGHT1);
+		gl.glEnable(GL.GL_LIGHT2);
+		gl.glEnable(GL.GL_LIGHT3);
+		gl.glDisable(GL.GL_LIGHT4);
 		
 //		gl.glPushMatrix();
 //		gl.glTranslatef(0, 0.3f, 0);
 //		obstacles[0].obj.Draw();
 //		gl.glPopMatrix();
-		
+
 		gl.glPopMatrix();
 		
 		if (animator.isAnimating()){
@@ -691,12 +738,17 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			
 			if(checkCollision()){
 				System.out.println("Deadd");
-				
-				if(!funMode)
+				animator.stop();
+				new Gameover(Long.toString(score), this);
+				/*if(!funMode){
 					animator.stop();
+				}*/
 				
 			}
 		}
+		
+
+		
 	}	
 	
 	private boolean checkRangeX() {
@@ -734,8 +786,9 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	float far = -80f;
 	
 	static int astcnt = 500;
+	
 	public Environment() {
-		super("project");
+		super("Asteroid Game by Calvin Mei and Batkhuyag Batsaikhan");
 		for(int i = 0; i < astcnt; i++){
 			obstacles[i] = new Obstacle();
 			
@@ -770,6 +823,14 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		setVisible(true);
 		animator.start();
 		canvas.requestFocus();
+	}
+	
+	public void restart(){
+		R = 8;
+		this.removeAll();
+		this.dispose();
+		new Environment();
+		revalidate();
 	}
 	
 	public static void main(String[] args) {
@@ -816,6 +877,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_POSITION, light2_position, 0);
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_DIFFUSE, light2_diffuse, 0);
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_SPECULAR, light2_specular, 0);
+	    
+	    float light4_position[] = { 0, 0, 1, -10 };
+	    float light4_diffuse[] = { 1, 0.9f, 0, 1 };
+	    float light4_specular[] = { 1, 1, 1, 1 };
+	    gl.glLightfv( GL.GL_LIGHT4, GL.GL_POSITION, light4_position, 0);
+	    gl.glLightfv( GL.GL_LIGHT4, GL.GL_DIFFUSE, light4_diffuse, 0);
+	    gl.glLightfv( GL.GL_LIGHT4, GL.GL_SPECULAR, light4_specular, 0);
 
 	    //material
 	    float mat_ambient[] = { 0, 0, 0, 1 };
