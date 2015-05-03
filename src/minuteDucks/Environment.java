@@ -33,28 +33,14 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	 * and displaying the mesh.
 	 */
 	
-//	class Player extends objModel{
-//
-//		public Player(String filename) {
-//			super(filename);
-//			
-//		}
-//		
-//		private moveUp(){
-//			
-//		}
-//	}
 	
 	class Player extends Obstacle{
 
 		public Player(objModel obj, float x, float y, float z) {
 			super(obj, x, y, z);
+			this.radius = 0f;
 		}
 		
-		public boolean checkCollision(){
-			
-			return false;
-		}
 	}
 	
 	class objModel {
@@ -309,34 +295,41 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			num_faces = input_faces.size()/3;
 		}		
 	}
-
 	
 	class Obstacle{
 		objModel obj;
 		public float x, y, z, speed, speedx, speedy;
-		public float r = 0.5f;
+		public float r = 0.25f;
 		public float radius;
-		
+		public double color;
 
 		public Obstacle(objModel obj, float x, float y, float z) {
 			this.obj = obj;
 			this.x = x;
 			this.y = y;
 			this.z = z;
-			this.radius = r * ((float)Math.random() + 1) / 2;
+			this.radius = findRadius();
+		}
+		public float findRadius(){
+//			return 1;
+			double rand = Math.random();
+			
+
+			return R*r * (float)(rand*rand*rand*rand*rand*rand + 0.3);
+//			return r;
 		}
 		public Obstacle() {
 			obj = null;
 			x = 0;
 			y = 0;
 			z = 0;
-			this.radius = r * ((float)Math.random() + 1) / 2;
+			this.radius = findRadius();
 		}
 	}
 	
 	public float cameraYSpeed = 0;
 	public float cameraXSpeed = 0;
-	public float dif = 0.2f;
+	public float dif = 0.4f;
 	public float rot = 1f;
 	
 	public void keyPressed(KeyEvent e) {
@@ -446,6 +439,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	private float motionSpeed, rotateSpeed;
 	private float animation_speed = 1.0f;
 	
+	public static float R = 8;
 	
 	/* === YOUR WORK HERE === */
 	/* Define more models you need for constructing your scene */
@@ -518,61 +512,66 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		/* Skybox */
 		gl.glPushMatrix();
 		
+		int d = 200;
+        int w = 150;
+        
 		gl.glEnable(GL.GL_TEXTURE_2D);
 		gl.glColor3f(0f, 1f, 0.2f);
 		//Front
 		skybox[0].enable();
 		skybox[0].bind();
 		gl.glBegin(GL.GL_QUADS);
-		gl.glTexCoord2f(0, 0); 	gl.glVertex3f(-10, -10, -10);
-		gl.glTexCoord2f(1, 0); gl.glVertex3f(+10, -10, -10);
-		gl.glTexCoord2f(1, 1); 	gl.glVertex3f(10, 10, -10);
-		gl.glTexCoord2f(0, 1);	gl.glVertex3f(-10, 10, -10);
+		gl.glTexCoord2f(0, 0); 	gl.glVertex3f(-w, -w, -d);
+		gl.glTexCoord2f(1, 0); gl.glVertex3f(+w, -w, -d);
+		gl.glTexCoord2f(1, 1); 	gl.glVertex3f(w, w, -d);
+		gl.glTexCoord2f(0, 1);	gl.glVertex3f(-w, w, -d);
         gl.glEnd();
         skybox[0].disable();
         
-        //Left
-        skybox[1].enable();
-		skybox[1].bind();
-        gl.glBegin(GL.GL_QUADS);
-        gl.glVertex3f(-30, -10, -10);
-        gl.glVertex3f(-30, +10, -10);
-        gl.glVertex3f(-30, +10, +10);
-        gl.glVertex3f(-30, -10, +10);
-        gl.glEnd();
-        skybox[1].disable();
         
-        //Behind
-		gl.glBegin(GL.GL_QUADS);
-        gl.glVertex3f(-10, 10, +30);
-        gl.glVertex3f(10, 10, +30);
-        gl.glVertex3f(+10, -10, +30);
-		gl.glVertex3f(-10, -10, +30);
-        gl.glEnd();
-        
-        // Right
-        gl.glBegin(GL.GL_QUADS);
-        gl.glVertex3f(+30, -10, +10);
-        gl.glVertex3f(+30, +10, +10);
-        gl.glVertex3f(+30, +10, -10);
-        gl.glVertex3f(+30, -10, -10);
-        gl.glEnd();
-
-        // Up
-        gl.glBegin(GL.GL_QUADS);
-        gl.glVertex3f(-10, +30, -10);
-        gl.glVertex3f(+10, +30, -10);
-        gl.glVertex3f(+10, +30, +10);
-        gl.glVertex3f(-10, +30, +10);
-        gl.glEnd();
-        
-        // Down
-        gl.glBegin(GL.GL_QUADS);
-        gl.glVertex3f(-10, -30, +10);
-        gl.glVertex3f(+10, -30, +10);
-        gl.glVertex3f(+10, -30, -10);
-        gl.glVertex3f(-10, -30, -10);
-        gl.glEnd();
+//        
+//        //Left
+//        skybox[1].enable();
+//		skybox[1].bind();
+//        gl.glBegin(GL.GL_QUADS);
+//        gl.glVertex3f(-30, -10, -10);
+//        gl.glVertex3f(-30, +10, -10);
+//        gl.glVertex3f(-30, +10, +10);
+//        gl.glVertex3f(-30, -10, +10);
+//        gl.glEnd();
+//        skybox[1].disable();
+//        
+//        //Behind
+//		gl.glBegin(GL.GL_QUADS);
+//        gl.glVertex3f(-w, w, +d);
+//        gl.glVertex3f(w, w, +d);
+//        gl.glVertex3f(+w, -w, +d);
+//		gl.glVertex3f(-w, -w, +d);
+//        gl.glEnd();
+//        
+//        // Right
+//        gl.glBegin(GL.GL_QUADS);
+//        gl.glVertex3f(+30, -10, +10);
+//        gl.glVertex3f(+30, +10, +10);
+//        gl.glVertex3f(+30, +10, -10);
+//        gl.glVertex3f(+30, -10, -10);
+//        gl.glEnd();
+//
+//        // Up
+//        gl.glBegin(GL.GL_QUADS);
+//        gl.glVertex3f(-10, +30, -10);
+//        gl.glVertex3f(+10, +30, -10);
+//        gl.glVertex3f(+10, +30, +10);
+//        gl.glVertex3f(-10, +30, +10);
+//        gl.glEnd();
+//        
+//        // Down
+//        gl.glBegin(GL.GL_QUADS);
+//        gl.glVertex3f(-10, -30, +10);
+//        gl.glVertex3f(+10, -30, +10);
+//        gl.glVertex3f(+10, -30, -10);
+//        gl.glVertex3f(-10, -30, -10);
+//        gl.glEnd();
         
         
         gl.glPopMatrix();
@@ -584,7 +583,31 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			gl.glTranslatef(obstacles[i].x, obstacles[i].y, obstacles[i].z);
 			
 			gl.glScalef(obstacles[i].radius, obstacles[i].radius, obstacles[i].radius);
-			obstacles[i].obj.Draw();
+			
+			double rand = obstacles[i].color;
+			
+			if(rand < 0.33){
+				gl.glDisable( GL.GL_LIGHT1 );
+				gl.glDisable( GL.GL_LIGHT2 );
+				obstacles[i].obj.Draw();
+				gl.glEnable( GL.GL_LIGHT1 );
+				gl.glEnable( GL.GL_LIGHT2 );
+			}
+			else if( rand < 0.66){
+//				gl.glDisable( GL.GL_LIGHT1 );
+				gl.glDisable( GL.GL_LIGHT3 );
+				obstacles[i].obj.Draw();
+//				gl.glEnable( GL.GL_LIGHT1 );
+				gl.glEnable( GL.GL_LIGHT3 );
+			}
+			else{
+				gl.glDisable( GL.GL_LIGHT2 );
+				gl.glDisable( GL.GL_LIGHT3 );
+				obstacles[i].obj.Draw();
+				gl.glEnable( GL.GL_LIGHT2 );
+				gl.glEnable( GL.GL_LIGHT3 );
+			}
+			
 			gl.glPopMatrix();
 		}
 		
@@ -599,6 +622,12 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		
 		gl.glRotatef(-90f, 0, 1f, 0);
 		player.obj.Draw();
+		
+//		gl.glPushMatrix();
+//		gl.glTranslatef(0, 0.3f, 0);
+//		obstacles[0].obj.Draw();
+//		gl.glPopMatrix();
+		
 		gl.glPopMatrix();
 		
 		if (animator.isAnimating()){
@@ -611,12 +640,13 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				if( obst.z >= 8 ){
 					obst.x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 					obst.y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
-					obst.z = -40f;
+					obst.z = far;
 					obst.speed = (float)(Math.random()+1)/2;
-					obst.speedx = (float)(Math.random()-1)/15;
-					obst.speedy = (float)(Math.random()-1)/15;
-					obst.radius = obst.r * ((float)Math.random() * 2 + 1) / 2;
-					System.out.println(obst.radius);
+					obst.speedx = (float)(Math.random()-1)/10;
+					obst.speedy = (float)(Math.random()-1)/10;
+					obst.radius = obst.findRadius();
+					R += (0.1/(R));
+//					System.out.println(obst.radius);
 				}
 			}
 			
@@ -656,7 +686,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 			
 			if(checkCollision()){
 				System.out.println("Deadd");
-				//animator.stop();
+				animator.stop();
 
 			}
 		}
@@ -680,7 +710,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	}
 
 	private boolean isCollided(Obstacle obst) {
-		return dist(obst) < player.radius + obst.radius;
+		return dist(obst) < (player.radius + obst.radius) / 2.4;
 	}
 
 	private float dist(Obstacle obst) {
@@ -693,19 +723,23 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		return playerPos.length();
 	}
 
-	int obslim = 15;
+	int obslim = 40;
+	float far = -80f;
+	
 	static int astcnt = 500;
 	public Environment() {
 		super("project");
 		for(int i = 0; i < astcnt; i++){
 			obstacles[i] = new Obstacle();
-			obstacles[i].obj = new objModel("crystal_1.obj");
+			obstacles[i].obj = new objModel("asteroid_model.obj");
 			obstacles[i].x = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
 			obstacles[i].y = Math.random() < .5 ? (float)Math.random()*obslim : (float)Math.random()*-obslim;
-			obstacles[i].z = -50f;
+			obstacles[i].z = far;
 			obstacles[i].speed = (float)(Math.random()+1)/2;
 			obstacles[i].speedx = (float)(Math.random()-1)/15;
 			obstacles[i].speedy = (float)(Math.random()-1)/15;
+			obstacles[i].radius = obstacles[i].findRadius();
+			obstacles[i].color = Math.random();
 		}
 		canvas = new GLCanvas();
 		canvas.addGLEventListener(this);
@@ -744,16 +778,25 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 	    //red light
 	    float light1_position[] = { -.1f, .1f, 0, 0 };
-	    float light1_diffuse[] = { .6f, .05f, .05f, 1 };
-	    float light1_specular[] = { .6f, .05f, .05f, 1 };
+	    float light1_diffuse[] = { 1f, .05f, .05f, 1 };
+	    float light1_specular[] = { 1f, .05f, .05f, 1 };
 	    gl.glLightfv( GL.GL_LIGHT1, GL.GL_POSITION, light1_position, 0);
 	    gl.glLightfv( GL.GL_LIGHT1, GL.GL_DIFFUSE, light1_diffuse, 0);
 	    gl.glLightfv( GL.GL_LIGHT1, GL.GL_SPECULAR, light1_specular, 0);
 
+	    //green light
+	    float light3_position[] = { .1f, -.1f, 0, 0 };
+	    float light3_diffuse[] = { .5f, 1f, .05f, 1 };
+	    float light3_specular[] = { .5f, 1f, .05f, 1 };
+	    gl.glLightfv( GL.GL_LIGHT3, GL.GL_POSITION, light3_position, 0);
+	    gl.glLightfv( GL.GL_LIGHT3, GL.GL_DIFFUSE, light3_diffuse, 0);
+	    gl.glLightfv( GL.GL_LIGHT3, GL.GL_SPECULAR, light3_specular, 0);
+	    
+	    
 	    //blue light
 	    float light2_position[] = { .1f, .1f, 0, 0 };
-	    float light2_diffuse[] = { .05f, .05f, .6f, 1 };
-	    float light2_specular[] = { .05f, .05f, .6f, 1 };
+	    float light2_diffuse[] = { .05f, .05f, 1f, 1 };
+	    float light2_specular[] = { .05f, .05f, 1f, 1 };
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_POSITION, light2_position, 0);
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_DIFFUSE, light2_diffuse, 0);
 	    gl.glLightfv( GL.GL_LIGHT2, GL.GL_SPECULAR, light2_specular, 0);
@@ -786,6 +829,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 	    gl.glEnable( GL.GL_LIGHT0 );
 	    gl.glEnable( GL.GL_LIGHT1 );
 	    gl.glEnable( GL.GL_LIGHT2 );
+	    gl.glEnable( GL.GL_LIGHT3 );
 
 	    gl.glEnable(GL.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL.GL_LESS);
