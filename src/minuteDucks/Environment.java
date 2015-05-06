@@ -26,6 +26,13 @@ import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureData;
 import com.sun.opengl.util.texture.TextureIO;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
+
 import java.util.ArrayList;
 
 class Environment extends JFrame implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, ActionListener {
@@ -327,8 +334,10 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_SPACE:
-			if(state == MENU)
+			if(state == MENU){
 				state = GAME;
+				playSound(-1);
+			}	
 //			System.out.println("pressed");
 			break;
 		case KeyEvent.VK_RIGHT:
@@ -497,7 +506,7 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 		/* Skybox */
 		gl.glPushMatrix();
 		int d = 200;
-        int w = 150;
+        int w = 160;
 		gl.glEnable(GL.GL_TEXTURE_2D);
 		gl.glColor3f(0f, 1f, 0.2f);
 		
@@ -678,12 +687,31 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 				playery -= ydif;
 			}
 			
-			
+			if(score - prevR2 > 60){
+				prevR2 = score;
+				double x = Math.random();
+				
+				if(x < 0.2)
+					;
+				else if(x < 0.4)
+					playSound(2);
+				else 
+					playSound(4);
+				
+				if(ydif != 0 || xdif != 0){
+					playSound(3);
+				}
+			}	
+
 			
 			if(checkCollision()){
 				if(!funMode){
 					animator.stop();
+					playSound(1);
+					playSound(-1);
 					new Gameover(Long.toString(score), this);
+					
+					playSound(0);
 				}
 			}
 		}
@@ -691,6 +719,8 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 
 		
 	}	
+	
+	
 	
 	private boolean checkRangeX() {
 		return playerx < -obslim *2/3 || playerx > obslim*2/3;
@@ -774,8 +804,73 @@ class Environment extends JFrame implements GLEventListener, KeyListener, MouseL
 //		revalidate();
 	}
 	
+	long prevR2 = -150;
+	
+	static AudioStream theme;
+	static AudioStream theme1;
+	
+	public static void playSound(int state){
+		try {
+			String soundFile = "./starwars.wav";
+			
+			if(state == 0){
+				InputStream inx = new FileInputStream(soundFile);
+				theme = new AudioStream(inx);
+				AudioPlayer.player.start(theme);
+				return;
+			}
+				
+			else if(state == -1){
+				if(theme != null){
+					AudioPlayer.player.stop(theme);
+					theme = null;
+				}
+//				if(theme1 != null){
+//					AudioPlayer.player.stop(theme1);
+//					theme1 = null;
+//				}
+				return;
+			}
+			
+			else if(state == 1)
+				soundFile = "./bigboom.wav";
+			else if(state == 2)
+				soundFile = "./dontworr.wav";
+			else if(state == 3)
+				soundFile = "./comet.wav";
+			else if(state == 4){
+				soundFile = "./door.wav";
+//				InputStream inx = new FileInputStream(soundFile);
+//				theme1 = new AudioStream(inx);
+//				AudioPlayer.player.start(theme1);
+//				return;
+			}
+			else 
+				return;
+			
+			InputStream in = new FileInputStream(soundFile);
+	        AudioStream audioStream = new AudioStream(in);
+	        AudioPlayer.player.start(audioStream);
+	        
+//	        InputStream in;
+//			in = new FileInputStream("theme.mp3");
+//			
+//		    // create an audiostream from the inputstream
+//		    AudioStream audioStream = new AudioStream(in);
+//		 
+//		    // play the audio clip with the audioplayer class
+//		    AudioPlayer.player.start(audioStream);
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
-
+		
+		playSound(0);
+		
 		new Environment();
 	}
 	
